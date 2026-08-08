@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>今日之鍛鍊 - 日系家居健身清單</title>
+    
+    <!-- iOS Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="日系健身">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Noto Sans TC & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        muji: {
+                            bg: '#FBF9F5',         // 暖白 / 米白背景
+                            card: '#FFFFFF',       // 卡片純白
+                            text: '#2D2B2A',       // 柔和炭灰主字體
+                            muted: '#8C857B',      // 次要木質灰文字
+                            border: '#EFECE6',     // 淺米灰邊框
+                            accent: '#D8CFC4',     // 淡米棕點綴
+                            matcha: '#6E8A73',     // 抹茶綠（完成/強調色）
+                            matchaLight: '#EBF1EC',// 抹茶淡綠背景
+                            sand: '#F4F0EA',       // 沙色區塊
+                            wood: '#A39382'        // 木質主調
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'PingFang TC', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FBF9F5;
+            color: #2D2B2A;
+            font-family: 'Inter', -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* Custom Scrollbar Styling - Subtle Japanese aesthetic */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E8E2D5;
+            border-radius: 4px;
+        }
+
+        /* Card check strike-through animation */
+        .completed-title {
+            text-decoration: line-through;
+            color: #A09A91;
+            transition: all 0.25s ease;
+        }
+
+        .checkbox-bounce {
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .checkbox-bounce:active {
+            transform: scale(0.85);
+        }
+
+        /* Bottom safe area spacing for iPhone home indicator */
+        .safe-pb {
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom, 16px));
+        }
+
+        .safe-pt {
+            padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+        }
+
+        /* Glassmorphism soft bar */
+        .glass-header {
+            background: rgba(251, 249, 245, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* Custom Toast Notification */
+        #toast {
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-muji-text antialiased selection:bg-muji-matchaLight">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transform -translate-y-4 transition-all duration-300">
+        <div id="toast-message" class="bg-muji-text text-white text-xs px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+            <i class="fa-solid fa-check text-muji-matcha"></i>
+            <span>已更新操作</span>
+        </div>
+    </div>
+
+    <!-- Main Container restricted to Mobile Viewport Width -->
+    <div class="max-w-md mx-auto min-h-screen relative flex flex-col bg-muji-bg shadow-sm">
+
+        <!-- Header Zone -->
+        <header class="sticky top-0 z-30 glass-header border-b border-muji-border/60 px-5 pt-4 pb-3">
+            <div class="flex justify-between items-end">
+                <div>
+                    <p id="current-date" class="text-xs font-medium text-muji-muted tracking-wider uppercase">2026年8月8日 星期六</p>
+                    <h1 class="text-xl font-semibold tracking-wide text-muji-text mt-0.5">今日之鍛鍊</h1>
+                </div>
+                <button onclick="confirmResetAll()" class="text-xs text-muji-muted hover:text-red-500 transition-colors flex items-center gap-1 bg-muji-sand/70 px-2.5 py-1.5 rounded-lg active:scale-95">
+                    <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                    <span>重置記錄</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Progress Summary Section -->
+        <section class="px-5 pt-4 pb-2">
+            <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-sm">
+                <div class="flex justify-between items-baseline mb-2">
+                    <span class="text-xs font-medium text-muji-muted">今日完成進度</span>
+                    <span class="text-sm font-semibold text-muji-matcha" id="progress-text">0 / 0 (0%)</span>
+                </div>
+                <div class="w-full bg-muji-sand h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs (Today's List vs Exercise Library) -->
+        <div class="px-5 my-3">
+            <div class="grid grid-cols-2 bg-muji-sand p-1 rounded-xl text-center text-xs font-medium">
+                <button id="tab-today" onclick="switchTab('today')" class="py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>今日訓練</span>
+                    <span id="badge-count" class="bg-muji-matcha text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px]">0</span>
+                </button>
+                <button id="tab-library" onclick="switchTab('library')" class="py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-dumbbell"></i>
+                    <span>動作檢索</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Controls (Visible mainly on Library or when browsing) -->
+        <section id="filter-section" class="px-5 mb-3 hidden">
+            <!-- Muscle Group Filter Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
+                <button onclick="setMuscleFilter('all')" class="filter-muscle-btn active px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all">全部</button>
+                <button onclick="setMuscleFilter('胸部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">胸部</button>
+                <button onclick="setMuscleFilter('背部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">背部</button>
+                <button onclick="setMuscleFilter('肩膀')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">肩膀</button>
+                <button onclick="setMuscleFilter('手臂')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">手臂</button>
+                <button onclick="setMuscleFilter('核心')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">核心</button>
+                <button onclick="setMuscleFilter('腿部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">腿部</button>
+            </div>
+
+            <!-- Equipment Filter Buttons -->
+            <div class="flex items-center justify-between bg-white border border-muji-border/80 rounded-xl p-1 mt-2 text-xs">
+                <button onclick="setEquipmentFilter('all')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all">全部器材</button>
+                <button onclick="setEquipmentFilter('徒手')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all">徒手訓練</button>
+                <button onclick="setEquipmentFilter('啞鈴')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all">啞鈴訓練</button>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 px-5 safe-pb">
+            <!-- VIEW 1: TODAY'S WORKOUT CHECKLIST -->
+            <div id="view-today" class="space-y-3">
+                <div id="today-empty-state" class="hidden text-center py-12 px-4">
+                    <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-muji-sand flex items-center justify-center text-muji-muted">
+                        <i class="fa-solid fa-feather-pointed text-2xl"></i>
+                    </div>
+                    <h3 class="text-sm font-medium text-muji-text">今日清單尚未加入動作</h3>
+                    <p class="text-xs text-muji-muted mt-1 leading-relaxed">請前往「動作檢索」選擇適合的訓練，<br>輕鬆建構屬於你的家居健身計劃。</p>
+                    <button onclick="switchTab('library')" class="mt-4 px-4 py-2 bg-muji-text text-white text-xs rounded-xl shadow-xs active:scale-95 transition-all">
+                        瀏覽訓練動作
+                    </button>
+                </div>
+
+                <div id="today-list-container" class="space-y-3">
+                    <!-- Today exercise cards will be rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- VIEW 2: EXERCISE LIBRARY -->
+            <div id="view-library" class="hidden space-y-3">
+                <div id="library-list-container" class="space-y-3">
+                    <!-- Library exercise cards rendered dynamically -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Floating Rest Timer Footer Bar -->
+        <div id="timer-bar" class="fixed bottom-0 left-0 right-0 z-40 max-w-md mx-auto px-4 pb-4 pt-2 glass-header border-t border-muji-border/70">
+            <div class="bg-white border border-muji-border/80 rounded-2xl p-3 shadow-md">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div id="timer-icon-bg" class="w-9 h-9 rounded-xl bg-muji-sand flex items-center justify-center text-muji-text">
+                            <i class="fa-solid fa-stopwatch text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-muji-muted font-medium tracking-wide">組間休息計時</p>
+                            <p id="timer-display" class="text-lg font-mono font-bold text-muji-text leading-none">00:00</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Preset Buttons -->
+                    <div id="timer-presets" class="flex items-center gap-1.5">
+                        <button onclick="startTimer(30)" class="px-2.5 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">30秒</button>
+                        <button onclick="startTimer(60)" class="px-2.5 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">60秒</button>
+                        <button onclick="startTimer(90)" class="px-2.5 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">90秒</button>
+                    </div>
+
+                    <!-- Active Controls (Hidden default) -->
+                    <div id="timer-controls" class="hidden flex items-center gap-2">
+                        <button onclick="addTimerTime(10)" class="w-8 h-8 bg-muji-sand rounded-lg text-xs font-medium text-muji-text hover:bg-muji-accent/40 flex items-center justify-center">+10</button>
+                        <button id="timer-toggle-btn" onclick="toggleTimer()" class="w-8 h-8 bg-muji-text text-white rounded-lg text-xs flex items-center justify-center">
+                            <i class="fa-solid fa-pause"></i>
+                        </button>
+                        <button onclick="resetTimer()" class="w-8 h-8 bg-red-50 text-red-600 rounded-lg text-xs flex items-center justify-center">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* Comprehensive Exercise Database strictly constrained to Bodyweight & Dumbbells */
+        const EXERCISE_DATABASE = [
+            // 胸部 (Chest)
+            { id: 'c1', name: '標準俯臥撐 Standard Push-ups', muscle: '胸部', equipment: '徒手', sets: '3 組 × 12 次', note: '核心保持打直，雙手略寬於肩' },
+            { id: 'c2', name: '啞鈴地板推舉 Dumbbell Floor Press', muscle: '胸部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '背部平貼地面，手肘約呈45度下落' },
+            { id: 'c3', name: '椅邊屈臂伸 Chair Dips', muscle: '胸部', equipment: '徒手', sets: '3 組 × 10 次', note: '鍛鍊胸大肌下緣與三頭肌' },
+            { id: 'c4', name: '啞鈴平躺飛鳥 Dumbbell Flyes', muscle: '胸部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '胸部保持張力，手肘微微彎曲' },
+            { id: 'c5', name: '跪姿俯臥撐 Knee Push-ups', muscle: '胸部', equipment: '徒手', sets: '3 組 × 15 次', note: '適合初學者建立基礎胸肌力量' },
+
+            // 背部 (Back)
+            { id: 'b1', name: '雙臂啞鈴俯身划船 Dumbbell Bent-Over Row', muscle: '背部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '背部打直，將啞鈴拉向髖部' },
+            { id: 'b2', name: '超人式背肌伸展 Superman', muscle: '背部', equipment: '徒手', sets: '3 組 × 15 次', note: '俯臥地面，核心收緊發力抬起手腳' },
+            { id: 'b3', name: '單臂啞鈴划船 Single-Arm Dumbbell Row', muscle: '背部', equipment: '啞鈴', sets: '3 組 × 12 次 (每側)', note: '支撐於椅子上，專注單邊背肌收縮' },
+            { id: 'b4', name: '俯臥 Y-T-W 提臂 Prone Y-T-W Raises', muscle: '背部', equipment: '徒手', sets: '3 組 × 12 次', note: '無器材強化上背與肩胛穩定度' },
+            { id: 'b5', name: '啞鈴反向飛鳥 Dumbbell Reverse Fly', muscle: '背部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '俯身保持後背平直，鍛鍊後三角與上背' },
+
+            // 肩膀 (Shoulders)
+            { id: 's1', name: '啞鈴坐姿推舉 Seated Dumbbell Press', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 12 次', note: '向上推舉至頭頂，核心全程收緊' },
+            { id: 's2', name: '啞鈴側平舉 Dumbbell Lateral Raise', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 15 次', note: '手臂微彎向兩側抬起，打造肩部線條' },
+            { id: 's3', name: '派克俯臥撐 Pike Push-ups', muscle: '肩膀', equipment: '徒手', sets: '3 組 × 10 次', note: '臀部抬高呈V字，主要鍛鍊前三角肌' },
+            { id: 's4', name: '阿諾德推舉 Arnold Press', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 10 次', note: '旋轉手腕推舉，全方位刺激肩部肌群' },
+            { id: 's5', name: '啞鈴前平舉 Dumbbell Front Raise', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 12 次', note: '控制下降速度，注重前三角肌發力' },
+
+            // 手臂 (Arms)
+            { id: 'a1', name: '啞鈴站姿彎舉 Standing Dumbbell Curl', muscle: '手臂', equipment: '啞鈴', sets: '3 組 × 12 次', note: '大臂貼緊身體兩側，訓練二頭肌' },
+            { id: 'a2', name: '啞鈴俯身臂屈伸 Dumbbell Tricep Kickback', muscle: '手臂', equipment: '啞鈴', sets: '3 組 × 12 次', note: '向後伸展手臂，鍛鍊三頭肌長頭' },
+            { id: 'a3', name: '鑽石俯臥撐 Diamond Push-ups', muscle: '手臂', equipment: '徒手', sets: '3 組 × 10 次', note: '雙手拇指與食指相對，重點鍛鍊三頭肌' },
+            { id: 'a4', name: '啞鈴錘式彎舉 Dumbbell Hammer Curl', muscle: '手臂', equipment: '啞鈴', sets: '3 組 × 12 次', note: '掌心相對，強化肱肌與前臂力量' },
+
+            // 核心/腹部 (Core/Abs)
+            { id: 'ab1', name: '棒式平板支撐 Plank', muscle: '核心', equipment: '徒手', sets: '3 組 × 45 秒', note: '全身保持一直線，切勿塌腰' },
+            { id: 'ab2', name: '經典捲腹 Abdominal Crunches', muscle: '核心', equipment: '徒手', sets: '3 組 × 20 次', note: '下背貼地，用腹肌力量向上擠壓' },
+            { id: 'ab3', name: '俄羅斯轉體 Russian Twists', muscle: '核心', equipment: '徒手', sets: '3 組 × 20 次', note: '可徒手或手持啞鈴扭轉軀幹' },
+            { id: 'ab4', name: '登山者式 Mountain Climbers', muscle: '核心', equipment: '徒手', sets: '3 組 × 30 秒', note: '伏地挺身姿勢，雙腿交替快速提膝' },
+            { id: 'ab5', name: '死蟲式核心訓練 Dead Bug', muscle: '核心', equipment: '徒手', sets: '3 組 × 12 次', note: '仰臥對側手腳延伸，極佳的核心穩定練習' },
+
+            // 腿部/臀部 (Legs/Glutes)
+            { id: 'l1', name: '徒手深蹲 Bodyweight Squat', muscle: '腿部', equipment: '徒手', sets: '3 組 × 15 次', note: '臀部向後坐，膝蓋方向與腳尖一致' },
+            { id: 'l2', name: '高杯啞鈴深蹲 Goblet Squat', muscle: '腿部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '雙手於胸前緊抱啞鈴進行深蹲' },
+            { id: 'l3', name: '啞鈴向前弓步蹲 Dumbbell Lunge', muscle: '腿部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '雙腿交替下蹲至90度' },
+            { id: 'l4', name: '臀橋鍛鍊 Glute Bridge', muscle: '腿部', equipment: '徒手', sets: '3 組 × 15 次', note: '夾緊臀部向上頂起，強化臀大肌' },
+            { id: 'l5', name: '保加利亞單腿蹲 Bulgarian Split Squat', muscle: '腿部', equipment: '啞鈴', sets: '3 組 × 10 次 (每側)', note: '後腳放於椅子上，高效單腿訓練' }
+        ];
+
+        /* Application State */
+        let state = {
+            todayList: [], // Array of exercise IDs
+            completedItems: {}, // Object map: { exerciseId: boolean }
+            currentTab: 'today', // 'today' | 'library'
+            filterMuscle: 'all',
+            filterEquipment: 'all'
+        };
+
+        /* Timer State */
+        let timer = {
+            interval: null,
+            remainingSeconds: 0,
+            totalSeconds: 0,
+            isRunning: false
+        };
+
+        window.onload = function() {
+            initDate();
+            loadStateFromStorage();
+            renderApp();
+        };
+
+        // Render Current Date with Japanese/Traditional Chinese Format
+        function initDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const dateStr = now.toLocaleDateString('zh-TW', options);
+            document.getElementById('current-date').textContent = dateStr;
+        }
+
+        // LocalStorage Logic
+        function loadStateFromStorage() {
+            try {
+                const savedToday = localStorage.getItem('muji_workout_today');
+                const savedCompleted = localStorage.getItem('muji_workout_completed');
+                
+                if (savedToday) state.todayList = JSON.parse(savedToday);
+                if (savedCompleted) state.completedItems = JSON.parse(savedCompleted);
+            } catch (e) {
+                console.error("Failed to load local storage", e);
+            }
+        }
+
+        function saveStateToStorage() {
+            try {
+                localStorage.setItem('muji_workout_today', JSON.stringify(state.todayList));
+                localStorage.setItem('muji_workout_completed', JSON.stringify(state.completedItems));
+            } catch (e) {
+                console.error("Failed to save local storage", e);
+            }
+        }
+
+        function renderApp() {
+            updateProgress();
+            renderTodayList();
+            renderLibraryList();
+            updateBadge();
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            state.currentTab = tab;
+            const btnToday = document.getElementById('tab-today');
+            const btnLibrary = document.getElementById('tab-library');
+            const viewToday = document.getElementById('view-today');
+            const viewLibrary = document.getElementById('view-library');
+            const filterSection = document.getElementById('filter-section');
+
+            if (tab === 'today') {
+                btnToday.className = "py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2";
+                btnLibrary.className = "py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2";
+                viewToday.classList.remove('hidden');
+                viewLibrary.classList.add('hidden');
+                filterSection.classList.add('hidden');
+            } else {
+                btnLibrary.className = "py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2";
+                btnToday.className = "py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2";
+                viewLibrary.classList.remove('hidden');
+                viewToday.classList.add('hidden');
+                filterSection.classList.remove('hidden');
+            }
+        }
+
+        // Progress Calculation & Update
+        function updateProgress() {
+            const total = state.todayList.length;
+            let completedCount = 0;
+
+            state.todayList.forEach(id => {
+                if (state.completedItems[id]) completedCount++;
+            });
+
+            const percent = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+            
+            document.getElementById('progress-text').textContent = `${completedCount} / ${total} (${percent}%)`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            if (percent === 100 && total > 0) {
+                document.getElementById('progress-bar').className = "bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out animate-pulse";
+            } else {
+                document.getElementById('progress-bar').className = "bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out";
+            }
+        }
+
+        function updateBadge() {
+            document.getElementById('badge-count').textContent = state.todayList.length;
+        }
+
+        function renderTodayList() {
+            const container = document.getElementById('today-list-container');
+            const emptyState = document.getElementById('today-empty-state');
+
+            if (state.todayList.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            let html = '';
+
+            state.todayList.forEach(id => {
+                const item = EXERCISE_DATABASE.find(ex => ex.id === id);
+                if (!item) return;
+
+                const isDone = !!state.completedItems[id];
+
+                html += `
+                <div class="bg-white border ${isDone ? 'border-muji-border/50 bg-muji-bg/60' : 'border-muji-border'} rounded-2xl p-4 transition-all duration-300 shadow-xs flex items-center justify-between">
+                    <div class="flex items-center gap-3.5 flex-1 min-w-0 pr-2">
+                        <!-- Custom Minimalist Checkbox -->
+                        <button onclick="toggleComplete('${item.id}')" class="checkbox-bounce w-6 h-6 rounded-lg border ${isDone ? 'bg-muji-matcha border-muji-matcha text-white' : 'border-muji-accent/80 bg-white'} flex items-center justify-center shrink-0">
+                            ${isDone ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        </button>
+
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="text-[10px] px-2 py-0.5 rounded-md ${item.equipment === '徒手' ? 'bg-amber-50 text-amber-700 border border-amber-200/50' : 'bg-stone-100 text-stone-700 border border-stone-200/60'}">${item.equipment}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-md bg-muji-sand text-muji-muted">${item.muscle}</span>
+                            </div>
+                            <h4 class="text-sm font-medium ${isDone ? 'completed-title' : 'text-muji-text'} truncate">${item.name}</h4>
+                            <p class="text-xs text-muji-muted mt-0.5 font-mono">${item.sets}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <button onclick="removeFromToday('${item.id}')" class="w-8 h-8 rounded-xl bg-muji-sand/50 text-muji-muted hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderLibraryList() {
+            const container = document.getElementById('library-list-container');
+            let filtered = EXERCISE_DATABASE;
+
+            // Apply Muscle Filter
+            if (state.filterMuscle !== 'all') {
+                filtered = filtered.filter(ex => ex.muscle === state.filterMuscle);
+            }
+
+            // Apply Equipment Filter
+            if (state.filterEquipment !== 'all') {
+                filtered = filtered.filter(ex => ex.equipment === state.filterEquipment);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                <div class="text-center py-8 text-xs text-muji-muted">
+                    沒有符合條件的訓練動作
+                </div>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(item => {
+                const isAdded = state.todayList.includes(item.id);
+
+                html += `
+                <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-xs flex items-center justify-between">
+                    <div class="flex-1 min-w-0 pr-3">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] px-2 py-0.5 rounded-md ${item.equipment === '徒手' ? 'bg-amber-50 text-amber-700 border border-amber-200/50' : 'bg-stone-100 text-stone-700 border border-stone-200/60'}">${item.equipment}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-md bg-muji-sand text-muji-muted">${item.muscle}</span>
+                        </div>
+                        <h4 class="text-sm font-medium text-muji-text">${item.name}</h4>
+                        <p class="text-xs text-muji-muted mt-0.5 font-mono">${item.sets}</p>
+                        ${item.note ? `<p class="text-[11px] text-muji-muted/80 mt-1 italic">${item.note}</p>` : ''}
+                    </div>
+
+                    <div>
+                        ${isAdded ? `
+                            <button onclick="removeFromToday('${item.id}')" class="px-3 py-1.5 rounded-xl bg-muji-matchaLight text-muji-matcha text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                                <i class="fa-solid fa-check text-[10px]"></i>
+                                <span>已加入</span>
+                            </button>
+                        ` : `
+                            <button onclick="addToToday('${item.id}')" class="px-3 py-1.5 rounded-xl bg-muji-sand hover:bg-muji-accent/40 text-muji-text text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>加入</span>
+                            </button>
+                        `}
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        /* Filter Controller Functions */
+        function setMuscleFilter(muscle) {
+            state.filterMuscle = muscle;
+            const btns = document.querySelectorAll('.filter-muscle-btn');
+            btns.forEach(btn => {
+                if ((muscle === 'all' && btn.textContent === '全部') || btn.textContent === muscle) {
+                    btn.className = "filter-muscle-btn active px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all";
+                } else {
+                    btn.className = "filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all";
+                }
+            });
+            renderLibraryList();
+        }
+
+        function setEquipmentFilter(equip) {
+            state.filterEquipment = equip;
+            const btns = document.querySelectorAll('.filter-equip-btn');
+            btns.forEach(btn => {
+                const text = btn.textContent;
+                if ((equip === 'all' && text.includes('全部')) || 
+                    (equip === '徒手' && text.includes('徒手')) || 
+                    (equip === '啞鈴' && text.includes('啞鈴'))) {
+                    btn.className = "filter-equip-btn flex-1 py-1.5 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all";
+                } else {
+                    btn.className = "filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all";
+                }
+            });
+            renderLibraryList();
+        }
+
+        /* Checklist Interactions */
+        function addToToday(id) {
+            if (!state.todayList.includes(id)) {
+                state.todayList.push(id);
+                saveStateToStorage();
+                renderApp();
+                showToast("已加入今日清單");
+            }
+        }
+
+        function removeFromToday(id) {
+            state.todayList = state.todayList.filter(item => item !== id);
+            delete state.completedItems[id];
+            saveStateToStorage();
+            renderApp();
+            showToast("已從清單移除");
+        }
+
+        function toggleComplete(id) {
+            state.completedItems[id] = !state.completedItems[id];
+            saveStateToStorage();
+            renderApp();
+            
+            // Haptic Feedback for iPhone Safari if available
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(40);
+            }
+        }
+
+        function confirmResetAll() {
+            if (confirm("確定要重置今日的鍛鍊記錄與選擇嗎？")) {
+                state.todayList = [];
+                state.completedItems = {};
+                saveStateToStorage();
+                renderApp();
+                showToast("今日記錄已重置");
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const message = document.getElementById('toast-message').querySelector('span');
+            message.textContent = msg;
+            
+            toast.classList.remove('opacity-0', '-translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-4');
+            }, 1800);
+        }
+
+        /* Rest Timer Engine */
+        function startTimer(seconds) {
+            clearInterval(timer.interval);
+            timer.totalSeconds = seconds;
+            timer.remainingSeconds = seconds;
+            timer.isRunning = true;
+
+            updateTimerUI();
+            showActiveTimerControls(true);
+
+            timer.interval = setInterval(() => {
+                if (timer.remainingSeconds > 0) {
+                    timer.remainingSeconds--;
+                    updateTimerUI();
+                } else {
+                    finishTimer();
+                }
+            }, 1000);
+        }
+
+        function toggleTimer() {
+            if (!timer.isRunning && timer.remainingSeconds > 0) {
+                // Resume
+                timer.isRunning = true;
+                timer.interval = setInterval(() => {
+                    if (timer.remainingSeconds > 0) {
+                        timer.remainingSeconds--;
+                        updateTimerUI();
+                    } else {
+                        finishTimer();
+                    }
+                }, 1000);
+            } else {
+                // Pause
+                timer.isRunning = false;
+                clearInterval(timer.interval);
+            }
+            updateTimerToggleIcon();
+        }
+
+        function addTimerTime(seconds) {
+            timer.remainingSeconds += seconds;
+            timer.totalSeconds += seconds;
+            updateTimerUI();
+        }
+
+        function resetTimer() {
+            clearInterval(timer.interval);
+            timer.isRunning = false;
+            timer.remainingSeconds = 0;
+            updateTimerUI();
+            showActiveTimerControls(false);
+        }
+
+        function finishTimer() {
+            resetTimer();
+            playChimeSound();
+
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate([200, 100, 200, 100, 300]);
+            }
+
+            showToast("休息時間結束！開始下一組吧");
+        }
+
+        function updateTimerUI() {
+            const mins = Math.floor(timer.remainingSeconds / 60);
+            const secs = timer.remainingSeconds % 60;
+            const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            document.getElementById('timer-display').textContent = formatted;
+            
+            const timerIcon = document.getElementById('timer-icon-bg');
+            if (timer.isRunning) {
+                timerIcon.className = "w-9 h-9 rounded-xl bg-muji-matcha text-white flex items-center justify-center animate-pulse";
+            } else {
+                timerIcon.className = "w-9 h-9 rounded-xl bg-muji-sand text-muji-text flex items-center justify-center";
+            }
+
+            updateTimerToggleIcon();
+        }
+
+        function updateTimerToggleIcon() {
+            const btn = document.getElementById('timer-toggle-btn');
+            if (timer.isRunning) {
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            }
+        }
+
+        function showActiveTimerControls(active) {
+            const presets = document.getElementById('timer-presets');
+            const controls = document.getElementById('timer-controls');
+
+            if (active) {
+                presets.classList.add('hidden');
+                controls.classList.remove('hidden');
+            } else {
+                presets.classList.remove('hidden');
+                controls.classList.add('hidden');
+            }
+        }
+
+        /* Web Audio API - Elegant Japanese Bell/Chime Sound without external URL dependencies */
+        function playChimeSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                
+                // First soft bell note
+                playTone(ctx, 523.25, 0, 0.6);  // C5
+                playTone(ctx, 659.25, 0.15, 0.8); // E5
+                playTone(ctx, 783.99, 0.3, 1.2);  // G5
+            } catch (e) {
+                console.log("Web Audio API not supported or blocked", e);
+            }
+        }
+
+        function playTone(ctx, freq, startTime, duration) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
+
+            gain.gain.setValueAtTime(0.3, ctx.currentTime + startTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(ctx.currentTime + startTime);
+            osc.stop(ctx.currentTime + startTime + duration);
+        }
+    </script>
+</body>
+</html>
