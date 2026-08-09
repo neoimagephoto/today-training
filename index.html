@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>今日之鍛鍊 - 家居健身清單</title>
+    <title>今日之鍛鍊 - 日系家居健身清單</title>
     
-    <!-- iOS Web App Meta Tags -->
+    <!-- iOS Web App Meta Tags & Apple Touch Icon -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="今日之鍛鍊">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><rect width='180' height='180' fill='%236E8A73'/><g fill='%23FFFFFF' transform='translate(90,90) rotate(-45) translate(-90,-90)'><rect x='37' y='74' width='10' height='32' rx='3'/><rect x='49' y='62' width='14' height='56' rx='5'/><rect x='65' y='70' width='10' height='40' rx='4'/><rect x='55' y='84' width='70' height='12' rx='6'/><rect x='105' y='70' width='10' height='40' rx='4'/><rect x='117' y='62' width='14' height='56' rx='5'/><rect x='133' y='74' width='10' height='32' rx='3'/></g></svg>">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -88,16 +89,12 @@
 
         /* Bottom safe area spacing for iPhone home indicator */
         .safe-pb {
-            padding-bottom: calc(5rem + env(safe-area-inset-bottom, 16px));
+            padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 16px));
         }
 
-        .safe-pt {
-            padding-top: calc(1rem + env(safe-area-inset-top, 0px));
-        }
-
-        /* Glassmorphism soft bar */
+        /* Glassmorphism soft header bar */
         .glass-header {
-            background: rgba(251, 249, 245, 0.88);
+            background: rgba(251, 249, 245, 0.92);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
@@ -114,7 +111,24 @@
     <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transform -translate-y-4 transition-all duration-300">
         <div id="toast-message" class="bg-muji-text text-white text-xs px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
             <i class="fa-solid fa-check text-muji-matcha"></i>
-            <span>已更新操作</span>
+            <span id="toast-text">已更新操作</span>
+        </div>
+    </div>
+
+    <!-- Custom Reset Confirmation Modal -->
+    <div id="reset-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/25 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-200">
+        <div id="reset-modal-card" class="bg-white rounded-2xl p-5 max-w-xs w-full shadow-lg border border-muji-border text-center space-y-3 transform scale-95 transition-transform duration-200">
+            <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 mx-auto flex items-center justify-center text-base">
+                <i class="fa-solid fa-rotate-left"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-muji-text">確定要重置記錄？</h3>
+                <p class="text-xs text-muji-muted mt-1 leading-relaxed">這將會清除今日所有打勾完成進度與自訂組數，恢復為初始狀態。</p>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+                <button onclick="closeResetModal()" class="flex-1 py-2 bg-muji-sand text-muji-text text-xs rounded-xl font-medium hover:bg-muji-accent/40 active:scale-95 transition-all">取消</button>
+                <button onclick="executeResetAll()" class="flex-1 py-2 bg-red-500 text-white text-xs rounded-xl font-medium hover:bg-red-600 active:scale-95 transition-all">確認重置</button>
+            </div>
         </div>
     </div>
 
@@ -123,9 +137,9 @@
 
         <!-- Header Zone -->
         <header class="sticky top-0 z-30 glass-header border-b border-muji-border/60 px-5 pt-4 pb-3">
-            <div class="flex justify-between items-end">
+            <div class="flex justify-between items-center">
                 <div>
-                    <p id="current-date" class="text-xs font-medium text-muji-muted tracking-wider uppercase">2026年8月8日 星期六</p>
+                    <p id="current-date" class="text-xs font-medium text-muji-muted tracking-wider uppercase">2026年8月9日 星期日</p>
                     <h1 class="text-xl font-semibold tracking-wide text-muji-text mt-0.5">今日之鍛鍊</h1>
                 </div>
                 <button onclick="confirmResetAll()" class="text-xs text-muji-muted hover:text-red-500 transition-colors flex items-center gap-1 bg-muji-sand/70 px-2.5 py-1.5 rounded-lg active:scale-95">
@@ -136,8 +150,8 @@
         </header>
 
         <!-- Progress Summary Section -->
-        <section class="px-5 pt-4 pb-2">
-            <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-sm">
+        <section class="px-5 pt-4 pb-1">
+            <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-xs">
                 <div class="flex justify-between items-baseline mb-2">
                     <span class="text-xs font-medium text-muji-muted">今日完成進度</span>
                     <span class="text-sm font-semibold text-muji-matcha" id="progress-text">0 / 0 (0%)</span>
@@ -148,7 +162,7 @@
             </div>
         </section>
 
-        <!-- Navigation Tabs (Today's List vs Exercise Library) -->
+        <!-- Navigation Tabs -->
         <div class="px-5 my-3">
             <div class="grid grid-cols-2 bg-muji-sand p-1 rounded-xl text-center text-xs font-medium">
                 <button id="tab-today" onclick="switchTab('today')" class="py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2">
@@ -163,21 +177,21 @@
             </div>
         </div>
 
-        <!-- Filter Controls (Visible mainly on Library or when browsing) -->
+        <!-- Filter Controls -->
         <section id="filter-section" class="px-5 mb-3 hidden">
             <!-- Muscle Group Filter Pills -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
                 <button onclick="setMuscleFilter('all')" class="filter-muscle-btn active px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all">全部</button>
-                <button onclick="setMuscleFilter('胸部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">胸部</button>
-                <button onclick="setMuscleFilter('背部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">背部</button>
-                <button onclick="setMuscleFilter('肩膀')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">肩膀</button>
-                <button onclick="setMuscleFilter('手臂')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">手臂</button>
-                <button onclick="setMuscleFilter('核心')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">核心</button>
-                <button onclick="setMuscleFilter('腿部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all">腿部</button>
+                <button onclick="setMuscleFilter('胸部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">胸部</button>
+                <button onclick="setMuscleFilter('背部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">背部</button>
+                <button onclick="setMuscleFilter('肩膀')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">肩膀</button>
+                <button onclick="setMuscleFilter('手臂')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">手臂</button>
+                <button onclick="setMuscleFilter('核心')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">核心</button>
+                <button onclick="setMuscleFilter('腿部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">腿部</button>
             </div>
 
             <!-- Equipment Filter Buttons -->
-            <div class="flex items-center justify-between bg-white border border-muji-border/80 rounded-xl p-1 mt-2 text-xs">
+            <div class="flex items-center justify-between bg-white border border-muji-border/80 rounded-xl p-1 mt-1 text-xs">
                 <button onclick="setEquipmentFilter('all')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all">全部器材</button>
                 <button onclick="setEquipmentFilter('徒手')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all">徒手訓練</button>
                 <button onclick="setEquipmentFilter('啞鈴')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all">啞鈴訓練</button>
@@ -200,14 +214,14 @@
                 </div>
 
                 <div id="today-list-container" class="space-y-3">
-                    <!-- Today exercise cards will be rendered dynamically -->
+                    <!-- Cards will be populated dynamically -->
                 </div>
             </div>
 
             <!-- VIEW 2: EXERCISE LIBRARY -->
             <div id="view-library" class="hidden space-y-3">
                 <div id="library-list-container" class="space-y-3">
-                    <!-- Library exercise cards rendered dynamically -->
+                    <!-- Cards will be populated dynamically -->
                 </div>
             </div>
         </main>
@@ -221,19 +235,26 @@
                             <i class="fa-solid fa-stopwatch text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] text-muji-muted font-medium tracking-wide">組間休息計時</p>
-                            <p id="timer-display" class="text-lg font-mono font-bold text-muji-text leading-none">00:00</p>
+                            <div class="flex items-center gap-1.5">
+                                <p class="text-[10px] text-muji-muted font-medium tracking-wide">組間休息計時</p>
+                                <!-- Mute Toggle Button -->
+                                <button onclick="toggleMute()" id="mute-btn" class="text-muji-muted hover:text-muji-text text-xs p-1 rounded-md bg-muji-sand/50 hover:bg-muji-sand transition-all active:scale-90 flex items-center justify-center" title="切換靜音">
+                                    <i id="mute-icon" class="fa-solid fa-volume-high text-muji-matcha"></i>
+                                </button>
+                            </div>
+                            <p id="timer-display" class="text-lg font-mono font-bold text-muji-text leading-none mt-0.5">00:00</p>
                         </div>
                     </div>
 
                     <!-- Quick Preset Buttons -->
-                    <div id="timer-presets" class="flex items-center gap-1.5">
-                        <button onclick="startTimer(30)" class="px-2.5 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">30秒</button>
-                        <button onclick="startTimer(60)" class="px-2.5 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">60秒</button>
-                        <button onclick="startTimer(90)" class="px-2.5 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">90秒</button>
+                    <div id="timer-presets" class="flex items-center gap-1">
+                        <button onclick="startTimer(10)" class="px-2 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">10秒</button>
+                        <button onclick="startTimer(20)" class="px-2 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">20秒</button>
+                        <button onclick="startTimer(30)" class="px-2 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">30秒</button>
+                        <button onclick="startTimer(60)" class="px-2 py-1.5 bg-muji-sand hover:bg-muji-accent/40 rounded-lg text-xs font-medium text-muji-text transition-all active:scale-95">60秒</button>
                     </div>
 
-                    <!-- Active Controls (Hidden default) -->
+                    <!-- Active Timer Controls -->
                     <div id="timer-controls" class="hidden flex items-center gap-2">
                         <button onclick="addTimerTime(10)" class="w-8 h-8 bg-muji-sand rounded-lg text-xs font-medium text-muji-text hover:bg-muji-accent/40 flex items-center justify-center">+10</button>
                         <button id="timer-toggle-btn" onclick="toggleTimer()" class="w-8 h-8 bg-muji-text text-white rounded-lg text-xs flex items-center justify-center">
@@ -253,86 +274,390 @@
         /* Comprehensive Exercise Database strictly constrained to Bodyweight & Dumbbells */
         const EXERCISE_DATABASE = [
             // 胸部 (Chest)
-            { id: 'c1', name: '標準俯臥撐 Standard Push-ups', muscle: '胸部', equipment: '徒手', sets: '3 組 × 12 次', note: '核心保持打直，雙手略寬於肩' },
-            { id: 'c2', name: '啞鈴地板推舉 Dumbbell Floor Press', muscle: '胸部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '背部平貼地面，手肘約呈45度下落' },
-            { id: 'c3', name: '椅邊屈臂伸 Chair Dips', muscle: '胸部', equipment: '徒手', sets: '3 組 × 10 次', note: '鍛鍊胸大肌下緣與三頭肌' },
-            { id: 'c4', name: '啞鈴平躺飛鳥 Dumbbell Flyes', muscle: '胸部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '胸部保持張力，手肘微微彎曲' },
-            { id: 'c5', name: '跪姿俯臥撐 Knee Push-ups', muscle: '胸部', equipment: '徒手', sets: '3 組 × 15 次', note: '適合初學者建立基礎胸肌力量' },
+            { 
+                id: 'c1', 
+                name: '標準俯臥撐 Standard Push-ups', 
+                muscle: '胸部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '雙手略寬於肩，手掌平貼地面，全身緊繃呈一直線。下沉軀幹至胸口離地約一拳距離，再由胸肌發力推回起始姿態。',
+                caution: '過程中切勿沉腰或聳肩；手肘下沉時與軀幹保持約 45 度角，避免肩關節負擔過大。'
+            },
+            { 
+                id: 'c2', 
+                name: '啞鈴地板推舉 Dumbbell Floor Press', 
+                muscle: '胸部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '仰臥於地面，雙腳屈膝踩地，雙手持啞鈴於胸兩側。發力垂直向上推舉至手臂伸直，下放至上臂輕觸地面即推起。',
+                caution: '上臂觸地時切勿放鬆或重擊地面；收緊肩胛骨，下背自然微拱，避免手腕向後過度翻折。'
+            },
+            { 
+                id: 'c3', 
+                name: '椅邊屈臂伸 Chair Dips', 
+                muscle: '胸部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 10, 
+                unit: '次', 
+                desc: '雙手支撐於穩固椅凳邊緣，雙腿前伸，屈肘使軀幹垂直下沉，直到手肘呈 90 度，再由三頭肌與胸肌發力推起。',
+                caution: '務必使用穩固不滑動的椅子；下沉深度適中即可，避免肩膀前傾過度導致肩關節拉傷。'
+            },
+            { 
+                id: 'c4', 
+                name: '啞鈴平躺飛鳥 Dumbbell Flyes', 
+                muscle: '胸部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '仰臥於地面，雙手持啞鈴向天花板伸直，手肘微彎。向兩側呈弧形張開至胸肌有拉伸感，再以夾胸感受將啞鈴收回。',
+                caution: '全程保持手肘微曲鎖定角度，切勿做成推舉；下放時控制速度，避免拉傷胸大肌肌腱。'
+            },
+            { 
+                id: 'c5', 
+                name: '跪姿俯臥撐 Knee Push-ups', 
+                muscle: '胸部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 15, 
+                unit: '次', 
+                desc: '雙膝著地、雙腳可微抬交叉，上半身與大腿呈一直線。雙手支撐進行俯臥撐下沉與推起，適合建立基礎胸肌力量。',
+                caution: '臀部切勿凸起或過度下沉，核心必須全程夾緊；動作離心下降時保持 2 秒緩慢節奏。'
+            },
 
             // 背部 (Back)
-            { id: 'b1', name: '雙臂啞鈴俯身划船 Dumbbell Bent-Over Row', muscle: '背部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '背部打直，將啞鈴拉向髖部' },
-            { id: 'b2', name: '超人式背肌伸展 Superman', muscle: '背部', equipment: '徒手', sets: '3 組 × 15 次', note: '俯臥地面，核心收緊發力抬起手腳' },
-            { id: 'b3', name: '單臂啞鈴划船 Single-Arm Dumbbell Row', muscle: '背部', equipment: '啞鈴', sets: '3 組 × 12 次 (每側)', note: '支撐於椅子上，專注單邊背肌收縮' },
-            { id: 'b4', name: '俯臥 Y-T-W 提臂 Prone Y-T-W Raises', muscle: '背部', equipment: '徒手', sets: '3 組 × 12 次', note: '無器材強化上背與肩胛穩定度' },
-            { id: 'b5', name: '啞鈴反向飛鳥 Dumbbell Reverse Fly', muscle: '背部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '俯身保持後背平直，鍛鍊後三角與上背' },
+            { 
+                id: 'b1', 
+                name: '雙臂啞鈴俯身划船 Dumbbell Bent-Over Row', 
+                muscle: '背部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '雙腳與肩同寬，屈膝俯身約 45 度，背部保持平直。雙手持啞鈴順著大腿向髖部拉起，頂峰時感受肩胛骨向中間夾緊。',
+                caution: '切勿圓背拱腰或靠腰部上下晃動借力；發力時以手肘帶動啞鈴，而非單純用手臂拉動。'
+            },
+            { 
+                id: 'b2', 
+                name: '超人式背肌伸展 Superman', 
+                muscle: '背部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 15, 
+                unit: '次', 
+                desc: '俯臥於地面，雙手向前伸直，核心收緊。同時將雙手、胸部與雙腿抬離地面，頂峰停頓 1-2 秒後緩慢還原。',
+                caution: '頸部保持中立，視線看向地面，切勿過度抬頭；動作宜慢不宜快，注重下背與臀肌收縮。'
+            },
+            { 
+                id: 'b3', 
+                name: '單臂啞鈴划船 Single-Arm Dumbbell Row', 
+                muscle: '背部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '一手一膝支撐於穩固椅面上，另一手持啞鈴垂於體側。將啞鈴沿弧線向髖骨方向拉起，頂峰擠壓單側背肌。',
+                caution: '軀幹保持平行地面不隨意旋轉；下放啞鈴時保持張力，切勿直接放鬆垂落。'
+            },
+            { 
+                id: 'b4', 
+                name: '俯臥 Y-T-W 提臂 Prone Y-T-W Raises', 
+                muscle: '背部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '俯臥於地面，雙手分別向外擺出 Y、T、W 形狀並向上抬起離地，強化上背、斜方肌與肩袖肌群穩定度。',
+                caution: '大拇指朝上，由肩胛骨收縮帶動發力；重量來自自身手臂重量即可，無需追求高抬幅度。'
+            },
+            { 
+                id: 'b5', 
+                name: '啞鈴反向飛鳥 Dumbbell Reverse Fly', 
+                muscle: '背部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '雙腳與肩同寬俯身，微屈膝背打直。手肘保持微彎，向兩側抬起啞鈴至平行地面，擠壓後三角肌與上背肌群。',
+                caution: '選用較輕重量，避免使用腰部晃動代償；注意力集中於肩胛骨中間與肩膀後側。'
+            },
 
             // 肩膀 (Shoulders)
-            { id: 's1', name: '啞鈴坐姿推舉 Seated Dumbbell Press', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 12 次', note: '向上推舉至頭頂，核心全程收緊' },
-            { id: 's2', name: '啞鈴側平舉 Dumbbell Lateral Raise', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 15 次', note: '手臂微彎向兩側抬起，打造肩部線條' },
-            { id: 's3', name: '派克俯臥撐 Pike Push-ups', muscle: '肩膀', equipment: '徒手', sets: '3 組 × 10 次', note: '臀部抬高呈V字，主要鍛鍊前三角肌' },
-            { id: 's4', name: '阿諾德推舉 Arnold Press', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 10 次', note: '旋轉手腕推舉，全方位刺激肩部肌群' },
-            { id: 's5', name: '啞鈴前平舉 Dumbbell Front Raise', muscle: '肩膀', equipment: '啞鈴', sets: '3 組 × 12 次', note: '控制下降速度，注重前三角肌發力' },
+            { 
+                id: 's1', 
+                name: '啞鈴坐姿推舉 Seated Dumbbell Press', 
+                muscle: '肩膀', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '坐於穩固椅上背部挺直，雙手持啞鈴於肩兩側（掌心朝前）。垂直向上推舉至手臂接近伸直，再緩慢下放至耳朵高度。',
+                caution: '核心收緊，避免下背過度拱起；推至頂點時啞鈴切勿相撞，手肘不要完全鎖死。'
+            },
+            { 
+                id: 's2', 
+                name: '啞鈴側平舉 Dumbbell Lateral Raise', 
+                muscle: '肩膀', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 15, 
+                unit: '次', 
+                desc: '站立微屈膝，雙手持啞鈴於體側，手肘微彎。向身體兩側抬起啞鈴至肩膀高度，如倒水般微傾手腕後緩慢下放。',
+                caution: '切勿聳肩發力或靠身體前後甩動借力；手肘高度應始終略高於或平行於手腕。'
+            },
+            { 
+                id: 's3', 
+                name: '派克俯臥撐 Pike Push-ups', 
+                muscle: '肩膀', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 10, 
+                unit: '次', 
+                desc: '雙手與雙腳著地，臀部高高抬起呈倒 V 字型。頭頂朝雙手前方下沉，屈肘進行垂直向上推舉，強烈刺激三角肌前束。',
+                caution: '視線看向雙腳而非雙手；若難度過高可將雙腳墊高或減小下沉幅度，保護頸椎。'
+            },
+            { 
+                id: 's4', 
+                name: '阿諾德推舉 Arnold Press', 
+                muscle: '肩膀', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 10, 
+                unit: '次', 
+                desc: '持啞鈴於胸前（掌心朝向自己），向上推舉同時順勢旋轉手腕，至頂峰時掌心朝前，下放時逆向旋轉還原。',
+                caution: '動作全程保持控制與順暢；旋轉與推舉同時進行，能全方位刺激三角肌前、中、後束。'
+            },
+            { 
+                id: 's5', 
+                name: '啞鈴前平舉 Dumbbell Front Raise', 
+                muscle: '肩膀', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '站姿持啞鈴於大腿前側。保持手肘微曲，交替或同時向前抬起啞鈴至視線高度，離心控制緩慢下放。',
+                caution: '身體切勿前後搖晃帶起重量；注重下降階段的離心收縮，保持三角肌前束張力。'
+            },
 
             // 手臂 (Arms)
-            { id: 'a1', name: '啞鈴站姿彎舉 Standing Dumbbell Curl', muscle: '手臂', equipment: '啞鈴', sets: '3 組 × 12 次', note: '大臂貼緊身體兩側，訓練二頭肌' },
-            { id: 'a2', name: '啞鈴俯身臂屈伸 Dumbbell Tricep Kickback', muscle: '手臂', equipment: '啞鈴', sets: '3 組 × 12 次', note: '向後伸展手臂，鍛鍊三頭肌長頭' },
-            { id: 'a3', name: '鑽石俯臥撐 Diamond Push-ups', muscle: '手臂', equipment: '徒手', sets: '3 組 × 10 次', note: '雙手拇指與食指相對，重點鍛鍊三頭肌' },
-            { id: 'a4', name: '啞鈴錘式彎舉 Dumbbell Hammer Curl', muscle: '手臂', equipment: '啞鈴', sets: '3 組 × 12 次', note: '掌心相對，強化肱肌與前臂力量' },
+            { 
+                id: 'a1', 
+                name: '啞鈴站姿彎舉 Standing Dumbbell Curl', 
+                muscle: '手臂', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '雙手掌心朝前持啞鈴，上臂緊貼軀幹兩側。彎曲手肘將啞鈴舉至肩前，頂峰收縮二頭肌 1 秒後緩慢下放。',
+                caution: '手肘切勿前後擺動借力；身體保持挺直不後仰，下放時切勿直接放鬆關節。'
+            },
+            { 
+                id: 'a2', 
+                name: '啞鈴俯身臂屈伸 Dumbbell Tricep Kickback', 
+                muscle: '手臂', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '俯身背打直，上臂平行軀幹固定不動。將啞鈴向後方伸直至手臂完全打直，頂峰擠壓三頭肌長頭。',
+                caution: '僅前臂移動，上臂位置全程鎖定；避免使用擺盪慣性，注重頂峰伸直時的肌肉緊繃感。'
+            },
+            { 
+                id: 'a3', 
+                name: '鑽石俯臥撐 Diamond Push-ups', 
+                muscle: '手臂', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 10, 
+                unit: '次', 
+                desc: '俯臥撐姿勢，雙手食指與拇指相觸呈鑽石形狀置於胸下。下沉軀幹至胸口觸碰雙手後推起，集中鍛鍊三頭肌。',
+                caution: '手腕壓力較大，若有不適可稍微加大雙手距離；可先從跪姿鑽石俯臥撐開始練習。'
+            },
+            { 
+                id: 'a4', 
+                name: '啞鈴錘式彎舉 Dumbbell Hammer Curl', 
+                muscle: '手臂', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '掌心相對（握錘姿勢）持啞鈴於體側。保持上臂固定，向肩部方向彎舉啞鈴，有效強化肱肌與前臂力量。',
+                caution: '避免下背晃動借力；握把保持穩固，離心下降過程維持 2 秒慢速控制。'
+            },
 
             // 核心/腹部 (Core/Abs)
-            { id: 'ab1', name: '棒式平板支撐 Plank', muscle: '核心', equipment: '徒手', sets: '3 組 × 45 秒', note: '全身保持一直線，切勿塌腰' },
-            { id: 'ab2', name: '經典捲腹 Abdominal Crunches', muscle: '核心', equipment: '徒手', sets: '3 組 × 20 次', note: '下背貼地，用腹肌力量向上擠壓' },
-            { id: 'ab3', name: '俄羅斯轉體 Russian Twists', muscle: '核心', equipment: '徒手', sets: '3 組 × 20 次', note: '可徒手或手持啞鈴扭轉軀幹' },
-            { id: 'ab4', name: '登山者式 Mountain Climbers', muscle: '核心', equipment: '徒手', sets: '3 組 × 30 秒', note: '伏地挺身姿勢，雙腿交替快速提膝' },
-            { id: 'ab5', name: '死蟲式核心訓練 Dead Bug', muscle: '核心', equipment: '徒手', sets: '3 組 × 12 次', note: '仰臥對側手腳延伸，極佳的核心穩定練習' },
+            { 
+                id: 'ab1', 
+                name: '棒式平板支撐 Plank', 
+                muscle: '核心', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 45, 
+                unit: '秒', 
+                desc: '前臂與腳尖著地，手肘位於肩正下方。頭部、背部、臀部與雙腿呈一直線，腹肌與臀部全力緊繃。',
+                caution: '切勿塌腰下沉或高抬臀部；保持順暢呼吸，切勿憋氣，臀部緊收能有效保護下背。'
+            },
+            { 
+                id: 'ab2', 
+                name: '經典捲腹 Abdominal Crunches', 
+                muscle: '核心', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 20, 
+                unit: '次', 
+                desc: '仰臥屈膝腳踩地，下背緊貼地面。雙手輕貼耳側，用腹肌發力將肩胛骨抬離地面，捲曲軀幹後緩慢還原。',
+                caution: '切勿用雙手用力扣拉頸椎；動作焦點在於腹肌擠壓捲曲，而非將整個上半身坐起。'
+            },
+            { 
+                id: 'ab3', 
+                name: '俄羅斯轉體 Russian Twists', 
+                muscle: '核心', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 20, 
+                unit: '次', 
+                desc: '坐姿微後仰使軀幹呈 V 字，腳跟可輕觸或離地。雙手抱拳或持啞鈴，將軀幹向左、右兩側交替旋轉帶動腹斜肌。',
+                caution: '由胸椎與腹部旋轉帶動，而非僅擺動手臂；背部保持微圓或挺直，避免腰椎負擔過大。'
+            },
+            { 
+                id: 'ab4', 
+                name: '登山者式 Mountain Climbers', 
+                muscle: '核心', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 30, 
+                unit: '秒', 
+                desc: '呈高位平板支撐姿勢。核心緊繃，雙腿交替快速向胸前提膝，宛如在地面奔跑，同時提升心肺與核心耐力。',
+                caution: '臀部保持穩定不大幅上下跳動；手肘保持微曲不鎖死，雙手穩穩支撐於肩下方。'
+            },
+            { 
+                id: 'ab5', 
+                name: '死蟲式核心訓練 Dead Bug', 
+                muscle: '核心', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '仰臥雙手向上伸直，雙腿抬起屈膝呈 90 度。下背緊貼地面，對側手腳同時緩慢向外延伸接近地面後收回。',
+                caution: '全程下背必須緊貼地面；若腰部離地拱起，說明核心已失控，應減小手腳延伸幅度。'
+            },
 
             // 腿部/臀部 (Legs/Glutes)
-            { id: 'l1', name: '徒手深蹲 Bodyweight Squat', muscle: '腿部', equipment: '徒手', sets: '3 組 × 15 次', note: '臀部向後坐，膝蓋方向與腳尖一致' },
-            { id: 'l2', name: '高杯啞鈴深蹲 Goblet Squat', muscle: '腿部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '雙手於胸前緊抱啞鈴進行深蹲' },
-            { id: 'l3', name: '啞鈴向前弓步蹲 Dumbbell Lunge', muscle: '腿部', equipment: '啞鈴', sets: '3 組 × 12 次', note: '雙腿交替下蹲至90度' },
-            { id: 'l4', name: '臀橋鍛鍊 Glute Bridge', muscle: '腿部', equipment: '徒手', sets: '3 組 × 15 次', note: '夾緊臀部向上頂起，強化臀大肌' },
-            { id: 'l5', name: '保加利亞單腿蹲 Bulgarian Split Squat', muscle: '腿部', equipment: '啞鈴', sets: '3 組 × 10 次 (每側)', note: '後腳放於椅子上，高效單腿訓練' }
+            { 
+                id: 'l1', 
+                name: '徒手深蹲 Bodyweight Squat', 
+                muscle: '腿部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 15, 
+                unit: '次', 
+                desc: '雙腳與肩同寬或略寬，腳尖微外展。臀部向後下方坐下至大腿平行地面，膝蓋追隨腳尖方向，隨後站起。',
+                caution: '下蹲時全程保持脊椎中立、胸口抬高；膝蓋切勿內扣，腳跟不可抬離地面。'
+            },
+            { 
+                id: 'l2', 
+                name: '高杯啞鈴深蹲 Goblet Squat', 
+                muscle: '腿部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '雙手於胸前緊抱啞鈴一端，保持軀幹挺直進行深蹲。前置重量有助於保持重心與挺胸，深層刺激臀腿。',
+                caution: '啞鈴全程緊貼胸口；下蹲時手肘可順勢落入雙膝內側，注意底部切勿拱背。'
+            },
+            { 
+                id: 'l3', 
+                name: '啞鈴向前弓步蹲 Dumbbell Lunge', 
+                muscle: '腿部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 12, 
+                unit: '次', 
+                desc: '雙手持啞鈴於體側，單腳向前跨出一大步。下蹲至前後膝蓋皆呈約 90 度（後膝接近地面），前腳跟發力推回。',
+                caution: '軀幹保持垂直挺拔切勿前傾；前膝蓋方向必須與腳尖一致，避免膝蓋向內拉傷。'
+            },
+            { 
+                id: 'l4', 
+                name: '臀橋鍛鍊 Glute Bridge', 
+                muscle: '腿部', 
+                equipment: '徒手', 
+                defaultSets: 3, 
+                defaultReps: 15, 
+                unit: '次', 
+                desc: '仰臥屈膝，雙腳與肩同寬踩地。夾緊臀部向上頂起軀幹至肩、髖、膝呈一直線，頂峰擠壓 1-2 秒後緩慢下放。',
+                caution: '發力來自臀部與腿後側，切勿靠腰部過度拱起借力；腳跟穩穩踩住地面。'
+            },
+            { 
+                id: 'l5', 
+                name: '保加利亞單腿蹲 Bulgarian Split Squat', 
+                muscle: '腿部', 
+                equipment: '啞鈴', 
+                defaultSets: 3, 
+                defaultReps: 10, 
+                unit: '次', 
+                desc: '單腳腳背放置於身後穩固椅凳上，前腳單腿進行下蹲至大腿平行地面，強烈孤立訓練單側臀腿力量。',
+                caution: '重心主要置於前腳腳跟；保持核心收緊與身體平衡，前膝切勿嚴重超過腳尖。'
+            }
         ];
 
         /* Application State */
         let state = {
-            todayList: [], // Array of exercise IDs
-            completedItems: {}, // Object map: { exerciseId: boolean }
-            currentTab: 'today', // 'today' | 'library'
+            todayList: ['c1', 'b1', 'l1'], // Default initial items
+            completedItems: {},             // Object map: { exerciseId: boolean }
+            customSetsReps: {},             // Object map: { exerciseId: { sets: number, reps: number } }
+            currentTab: 'today',            // 'today' | 'library'
             filterMuscle: 'all',
             filterEquipment: 'all'
         };
 
-        /* Timer State */
+        /* Timer & Web Audio State */
         let timer = {
             interval: null,
             remainingSeconds: 0,
             totalSeconds: 0,
             isRunning: false
         };
+        let audioCtx = null;
+        let isMuted = false;
 
+        /* Initialize App on Load */
         window.onload = function() {
             initDate();
             loadStateFromStorage();
+            updateMuteUI();
             renderApp();
+            
+            // Unlock Web Audio API context on first touch for iOS Safari compatibility
+            document.body.addEventListener('touchstart', initAudioContext, { once: true });
+            document.body.addEventListener('click', initAudioContext, { once: true });
         };
 
-        // Render Current Date with Japanese/Traditional Chinese Format
+        // Render Current Date with Traditional Chinese Format
         function initDate() {
             const now = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             const dateStr = now.toLocaleDateString('zh-TW', options);
-            document.getElementById('current-date').textContent = dateStr;
+            const dateEl = document.getElementById('current-date');
+            if (dateEl) dateEl.textContent = dateStr;
         }
 
-        // LocalStorage Logic
+        // LocalStorage Helpers
         function loadStateFromStorage() {
             try {
                 const savedToday = localStorage.getItem('muji_workout_today');
                 const savedCompleted = localStorage.getItem('muji_workout_completed');
+                const savedCustom = localStorage.getItem('muji_workout_custom');
+                const savedMuted = localStorage.getItem('muji_workout_muted');
                 
                 if (savedToday) state.todayList = JSON.parse(savedToday);
                 if (savedCompleted) state.completedItems = JSON.parse(savedCompleted);
+                if (savedCustom) state.customSetsReps = JSON.parse(savedCustom);
+                if (savedMuted !== null) isMuted = JSON.parse(savedMuted);
             } catch (e) {
                 console.error("Failed to load local storage", e);
             }
@@ -342,70 +667,174 @@
             try {
                 localStorage.setItem('muji_workout_today', JSON.stringify(state.todayList));
                 localStorage.setItem('muji_workout_completed', JSON.stringify(state.completedItems));
+                localStorage.setItem('muji_workout_custom', JSON.stringify(state.customSetsReps));
+                localStorage.setItem('muji_workout_muted', JSON.stringify(isMuted));
             } catch (e) {
                 console.error("Failed to save local storage", e);
             }
         }
 
-        function renderApp() {
-            updateProgress();
-            renderTodayList();
-            renderLibraryList();
-            updateBadge();
-        }
-
-        // Tab Switching
-        function switchTab(tab) {
-            state.currentTab = tab;
-            const btnToday = document.getElementById('tab-today');
-            const btnLibrary = document.getElementById('tab-library');
-            const viewToday = document.getElementById('view-today');
-            const viewLibrary = document.getElementById('view-library');
-            const filterSection = document.getElementById('filter-section');
-
-            if (tab === 'today') {
-                btnToday.className = "py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2";
-                btnLibrary.className = "py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2";
-                viewToday.classList.remove('hidden');
-                viewLibrary.classList.add('hidden');
-                filterSection.classList.add('hidden');
-            } else {
-                btnLibrary.className = "py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2";
-                btnToday.className = "py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2";
-                viewLibrary.classList.remove('hidden');
-                viewToday.classList.add('hidden');
-                filterSection.classList.remove('hidden');
-            }
-        }
-
-        // Progress Calculation & Update
         function updateProgress() {
             const total = state.todayList.length;
-            let completedCount = 0;
+            const completed = state.todayList.filter(id => !!state.completedItems[id]).length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            state.todayList.forEach(id => {
-                if (state.completedItems[id]) completedCount++;
-            });
+            const progressText = document.getElementById('progress-text');
+            const progressBar = document.getElementById('progress-bar');
 
-            const percent = total === 0 ? 0 : Math.round((completedCount / total) * 100);
-            
-            document.getElementById('progress-text').textContent = `${completedCount} / ${total} (${percent}%)`;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
-
-            if (percent === 100 && total > 0) {
-                document.getElementById('progress-bar').className = "bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out animate-pulse";
-            } else {
-                document.getElementById('progress-bar').className = "bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out";
+            if (progressText) {
+                progressText.textContent = `${completed} / ${total} (${percent}%)`;
+            }
+            if (progressBar) {
+                progressBar.style.width = `${percent}%`;
             }
         }
 
         function updateBadge() {
-            document.getElementById('badge-count').textContent = state.todayList.length;
+            const badge = document.getElementById('badge-count');
+            if (badge) {
+                badge.textContent = state.todayList.length;
+            }
+        }
+
+        function switchTab(tab) {
+            state.currentTab = tab;
+            const viewToday = document.getElementById('view-today');
+            const viewLibrary = document.getElementById('view-library');
+            const filterSection = document.getElementById('filter-section');
+            const tabToday = document.getElementById('tab-today');
+            const tabLibrary = document.getElementById('tab-library');
+
+            if (tab === 'today') {
+                viewToday.classList.remove('hidden');
+                viewLibrary.classList.add('hidden');
+                filterSection.classList.add('hidden');
+
+                tabToday.className = "py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2";
+                tabLibrary.className = "py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2";
+            } else {
+                viewToday.classList.add('hidden');
+                viewLibrary.classList.remove('hidden');
+                filterSection.classList.remove('hidden');
+
+                tabToday.className = "py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2";
+                tabLibrary.className = "py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2";
+            }
+            renderApp();
+        }
+
+        function setMuscleFilter(muscle) {
+            state.filterMuscle = muscle;
+            document.querySelectorAll('.filter-muscle-btn').forEach(btn => {
+                if (btn.textContent.trim().includes(muscle) || (muscle === 'all' && btn.textContent.trim() === '全部')) {
+                    btn.className = "filter-muscle-btn active px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all";
+                } else {
+                    btn.className = "filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all";
+                }
+            });
+            renderLibraryList();
+        }
+
+        function setEquipmentFilter(equip) {
+            state.filterEquipment = equip;
+            document.querySelectorAll('.filter-equip-btn').forEach(btn => {
+                const text = btn.textContent.trim();
+                if ((equip === 'all' && text === '全部器材') || (equip === '徒手' && text === '徒手訓練') || (equip === '啞鈴' && text === '啞鈴訓練')) {
+                    btn.className = "filter-equip-btn flex-1 py-1.5 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all";
+                } else {
+                    btn.className = "filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all";
+                }
+            });
+            renderLibraryList();
+        }
+
+        function getExerciseSetsReps(id) {
+            const item = EXERCISE_DATABASE.find(ex => ex.id === id);
+            if (!item) return { sets: 3, reps: 12, unit: '次' };
+            const custom = state.customSetsReps[id];
+            return {
+                sets: custom && custom.sets ? custom.sets : item.defaultSets,
+                reps: custom && custom.reps ? custom.reps : item.defaultReps,
+                unit: item.unit
+            };
+        }
+
+        function adjustSets(id, delta, event) {
+            if (event) event.stopPropagation();
+            const current = getExerciseSetsReps(id);
+            const newSets = Math.max(1, Math.min(20, current.sets + delta));
+            
+            if (!state.customSetsReps[id]) {
+                const item = EXERCISE_DATABASE.find(ex => ex.id === id);
+                state.customSetsReps[id] = { sets: item.defaultSets, reps: item.defaultReps };
+            }
+            state.customSetsReps[id].sets = newSets;
+            saveStateToStorage();
+            renderApp();
+        }
+
+        function adjustReps(id, delta, event) {
+            if (event) event.stopPropagation();
+            const item = EXERCISE_DATABASE.find(ex => ex.id === id);
+            const current = getExerciseSetsReps(id);
+            const step = item.unit === '秒' ? 5 : 1;
+            const newReps = Math.max(1, Math.min(300, current.reps + (delta * step)));
+            
+            if (!state.customSetsReps[id]) {
+                state.customSetsReps[id] = { sets: item.defaultSets, reps: item.defaultReps };
+            }
+            state.customSetsReps[id].reps = newReps;
+            saveStateToStorage();
+            renderApp();
+        }
+
+        function toggleTodayItem(id) {
+            const index = state.todayList.indexOf(id);
+            if (index > -1) {
+                state.todayList.splice(index, 1);
+                delete state.completedItems[id];
+                showToast("已從今日清單中移除");
+            } else {
+                state.todayList.push(id);
+                showToast("已加入今日清單");
+            }
+            saveStateToStorage();
+            renderApp();
+        }
+
+        function toggleComplete(id) {
+            state.completedItems[id] = !state.completedItems[id];
+            saveStateToStorage();
+            updateProgress();
+            renderTodayList();
+        }
+
+        function toggleDetails(id) {
+            const detailsEl = document.getElementById(`details-${id}`);
+            const iconEl = document.getElementById(`chevron-${id}`);
+            if (detailsEl) {
+                detailsEl.classList.toggle('hidden');
+            }
+            if (iconEl) {
+                iconEl.classList.toggle('rotate-180');
+            }
+        }
+
+        function renderApp() {
+            updateProgress();
+            updateBadge();
+            if (state.currentTab === 'today') {
+                renderTodayList();
+            } else {
+                renderLibraryList();
+            }
         }
 
         function renderTodayList() {
             const container = document.getElementById('today-list-container');
             const emptyState = document.getElementById('today-empty-state');
+            
+            if (!container || !emptyState) return;
 
             if (state.todayList.length === 0) {
                 container.innerHTML = '';
@@ -421,31 +850,80 @@
                 if (!item) return;
 
                 const isDone = !!state.completedItems[id];
+                const setsReps = getExerciseSetsReps(id);
 
                 html += `
-                <div class="bg-white border ${isDone ? 'border-muji-border/50 bg-muji-bg/60' : 'border-muji-border'} rounded-2xl p-4 transition-all duration-300 shadow-xs flex items-center justify-between">
-                    <div class="flex items-center gap-3.5 flex-1 min-w-0 pr-2">
-                        <!-- Custom Minimalist Checkbox -->
-                        <button onclick="toggleComplete('${item.id}')" class="checkbox-bounce w-6 h-6 rounded-lg border ${isDone ? 'bg-muji-matcha border-muji-matcha text-white' : 'border-muji-accent/80 bg-white'} flex items-center justify-center shrink-0">
-                            ${isDone ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
-                        </button>
+                    <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-xs transition-all duration-200 ${isDone ? 'bg-muji-sand/30 border-muji-border/50' : ''}">
+                        <div class="flex items-start justify-between gap-3">
+                            <!-- Checkbox Touch Target -->
+                            <button onclick="toggleComplete('${item.id}')" class="mt-0.5 checkbox-bounce flex-shrink-0 w-6 h-6 rounded-lg border-2 ${isDone ? 'bg-muji-matcha border-muji-matcha text-white' : 'border-muji-accent/80 bg-white'} flex items-center justify-center transition-all">
+                                <i class="fa-solid fa-check text-xs ${isDone ? 'opacity-100' : 'opacity-0'}"></i>
+                            </button>
 
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="text-[10px] px-2 py-0.5 rounded-md ${item.equipment === '徒手' ? 'bg-amber-50 text-amber-700 border border-amber-200/50' : 'bg-stone-100 text-stone-700 border border-stone-200/60'}">${item.equipment}</span>
-                                <span class="text-[10px] px-2 py-0.5 rounded-md bg-muji-sand text-muji-muted">${item.muscle}</span>
+                            <!-- Exercise Main Content -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap mb-1">
+                                    <span class="text-[10px] font-medium bg-muji-sand px-2 py-0.5 rounded-md text-muji-muted">${item.muscle}</span>
+                                    <span class="text-[10px] font-medium ${item.equipment === '徒手' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'} px-2 py-0.5 rounded-md">${item.equipment}</span>
+                                </div>
+                                
+                                <h3 class="text-sm font-semibold tracking-wide text-muji-text ${isDone ? 'completed-title' : ''}">${item.name}</h3>
+
+                                <!-- Adjustable Sets & Reps Controls -->
+                                <div class="flex items-center gap-3 mt-2.5 text-xs text-muji-muted">
+                                    <!-- Sets Control -->
+                                    <div class="flex items-center gap-1 bg-muji-sand/60 px-2 py-1 rounded-lg">
+                                        <span class="mr-1">組數:</span>
+                                        <button onclick="adjustSets('${item.id}', -1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">-</button>
+                                        <span class="font-semibold text-muji-text px-1">${setsReps.sets}</span>
+                                        <button onclick="adjustSets('${item.id}', 1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">+</button>
+                                        <span class="ml-0.5">組</span>
+                                    </div>
+
+                                    <!-- Reps Control -->
+                                    <div class="flex items-center gap-1 bg-muji-sand/60 px-2 py-1 rounded-lg">
+                                        <span class="mr-1">次數:</span>
+                                        <button onclick="adjustReps('${item.id}', -1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">-</button>
+                                        <span class="font-semibold text-muji-text px-1">${setsReps.reps}</span>
+                                        <button onclick="adjustReps('${item.id}', 1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">+</button>
+                                        <span class="ml-0.5">${setsReps.unit}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <h4 class="text-sm font-medium ${isDone ? 'completed-title' : 'text-muji-text'} truncate">${item.name}</h4>
-                            <p class="text-xs text-muji-muted mt-0.5 font-mono">${item.sets}</p>
+
+                            <!-- Delete Action Button -->
+                            <button onclick="toggleTodayItem('${item.id}')" class="text-muji-muted hover:text-red-500 p-1.5 transition-colors active:scale-90" title="移除動作">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Collapsible Exercise Detail Toggle -->
+                        <div class="mt-3 pt-2.5 border-t border-muji-border/60">
+                            <button onclick="toggleDetails('${item.id}')" class="w-full flex items-center justify-between text-[11px] text-muji-muted hover:text-muji-text transition-colors">
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-regular fa-circle-question text-muji-wood"></i>
+                                    <span>動作細節與注意事項</span>
+                                </span>
+                                <i id="chevron-${item.id}" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+                            </button>
+
+                            <!-- Collapsible Content Panel -->
+                            <div id="details-${item.id}" class="hidden mt-2.5 space-y-2 text-xs text-muji-muted bg-muji-bg p-3 rounded-xl border border-muji-border/50">
+                                <div>
+                                    <p class="font-semibold text-muji-text mb-0.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-lightbulb text-amber-500 text-[10px]"></i> 動作要領：
+                                    </p>
+                                    <p class="leading-relaxed text-[11px] text-muji-text/80">${item.desc}</p>
+                                </div>
+                                <div class="pt-1 border-t border-muji-border/40">
+                                    <p class="font-semibold text-muji-text mb-0.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-triangle-exclamation text-rose-400 text-[10px]"></i> 注意事項：
+                                    </p>
+                                    <p class="leading-relaxed text-[11px] text-muji-text/80">${item.caution}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="flex items-center gap-1">
-                        <button onclick="removeFromToday('${item.id}')" class="w-8 h-8 rounded-xl bg-muji-sand/50 text-muji-muted hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
                 `;
             });
 
@@ -454,281 +932,300 @@
 
         function renderLibraryList() {
             const container = document.getElementById('library-list-container');
-            let filtered = EXERCISE_DATABASE;
+            if (!container) return;
 
-            // Apply Muscle Filter
-            if (state.filterMuscle !== 'all') {
-                filtered = filtered.filter(ex => ex.muscle === state.filterMuscle);
-            }
-
-            // Apply Equipment Filter
-            if (state.filterEquipment !== 'all') {
-                filtered = filtered.filter(ex => ex.equipment === state.filterEquipment);
-            }
+            const filtered = EXERCISE_DATABASE.filter(ex => {
+                const matchMuscle = state.filterMuscle === 'all' || ex.muscle === state.filterMuscle;
+                const matchEquip = state.filterEquipment === 'all' || ex.equipment === state.filterEquipment;
+                return matchMuscle && matchEquip;
+            });
 
             if (filtered.length === 0) {
                 container.innerHTML = `
-                <div class="text-center py-8 text-xs text-muji-muted">
-                    沒有符合條件的訓練動作
-                </div>`;
+                    <div class="text-center py-10 text-muji-muted text-xs">
+                        未找到符合篩選條件的動作
+                    </div>
+                `;
                 return;
             }
 
             let html = '';
             filtered.forEach(item => {
-                const isAdded = state.todayList.includes(item.id);
+                const inToday = state.todayList.includes(item.id);
+                const setsReps = getExerciseSetsReps(item.id);
 
                 html += `
-                <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-xs flex items-center justify-between">
-                    <div class="flex-1 min-w-0 pr-3">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] px-2 py-0.5 rounded-md ${item.equipment === '徒手' ? 'bg-amber-50 text-amber-700 border border-amber-200/50' : 'bg-stone-100 text-stone-700 border border-stone-200/60'}">${item.equipment}</span>
-                            <span class="text-[10px] px-2 py-0.5 rounded-md bg-muji-sand text-muji-muted">${item.muscle}</span>
-                        </div>
-                        <h4 class="text-sm font-medium text-muji-text">${item.name}</h4>
-                        <p class="text-xs text-muji-muted mt-0.5 font-mono">${item.sets}</p>
-                        ${item.note ? `<p class="text-[11px] text-muji-muted/80 mt-1 italic">${item.note}</p>` : ''}
-                    </div>
+                    <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-xs transition-all duration-200">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap mb-1">
+                                    <span class="text-[10px] font-medium bg-muji-sand px-2 py-0.5 rounded-md text-muji-muted">${item.muscle}</span>
+                                    <span class="text-[10px] font-medium ${item.equipment === '徒手' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'} px-2 py-0.5 rounded-md">${item.equipment}</span>
+                                </div>
 
-                    <div>
-                        ${isAdded ? `
-                            <button onclick="removeFromToday('${item.id}')" class="px-3 py-1.5 rounded-xl bg-muji-matchaLight text-muji-matcha text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
-                                <i class="fa-solid fa-check text-[10px]"></i>
-                                <span>已加入</span>
+                                <h3 class="text-sm font-semibold tracking-wide text-muji-text">${item.name}</h3>
+
+                                <!-- Adjustable Sets & Reps Controls in Library -->
+                                <div class="flex items-center gap-3 mt-2.5 text-xs text-muji-muted">
+                                    <div class="flex items-center gap-1 bg-muji-sand/60 px-2 py-1 rounded-lg">
+                                        <span class="mr-1">預設:</span>
+                                        <button onclick="adjustSets('${item.id}', -1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">-</button>
+                                        <span class="font-semibold text-muji-text px-1">${setsReps.sets}</span>
+                                        <button onclick="adjustSets('${item.id}', 1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">+</button>
+                                        <span class="ml-0.5">組</span>
+                                    </div>
+
+                                    <div class="flex items-center gap-1 bg-muji-sand/60 px-2 py-1 rounded-lg">
+                                        <button onclick="adjustReps('${item.id}', -1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">-</button>
+                                        <span class="font-semibold text-muji-text px-1">${setsReps.reps}</span>
+                                        <button onclick="adjustReps('${item.id}', 1, event)" class="w-5 h-5 rounded bg-white border border-muji-border text-muji-text font-semibold flex items-center justify-center active:scale-90">+</button>
+                                        <span class="ml-0.5">${setsReps.unit}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add / Remove Toggle Button -->
+                            <button onclick="toggleTodayItem('${item.id}')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 ${inToday ? 'bg-muji-matchaLight text-muji-matcha border border-muji-matcha/30' : 'bg-muji-text text-white shadow-xs'}">
+                                <i class="fa-solid ${inToday ? 'fa-check' : 'fa-plus'} text-[10px]"></i>
+                                <span>${inToday ? '已加入' : '加入'}</span>
                             </button>
-                        ` : `
-                            <button onclick="addToToday('${item.id}')" class="px-3 py-1.5 rounded-xl bg-muji-sand hover:bg-muji-accent/40 text-muji-text text-xs font-medium flex items-center gap-1 transition-all active:scale-95">
-                                <i class="fa-solid fa-plus text-[10px]"></i>
-                                <span>加入</span>
+                        </div>
+
+                        <!-- Collapsible Exercise Detail Toggle -->
+                        <div class="mt-3 pt-2.5 border-t border-muji-border/60">
+                            <button onclick="toggleDetails('${item.id}')" class="w-full flex items-center justify-between text-[11px] text-muji-muted hover:text-muji-text transition-colors">
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-regular fa-circle-question text-muji-wood"></i>
+                                    <span>動作細節與注意事項</span>
+                                </span>
+                                <i id="chevron-${item.id}" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
                             </button>
-                        `}
+
+                            <div id="details-${item.id}" class="hidden mt-2.5 space-y-2 text-xs text-muji-muted bg-muji-bg p-3 rounded-xl border border-muji-border/50">
+                                <div>
+                                    <p class="font-semibold text-muji-text mb-0.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-lightbulb text-amber-500 text-[10px]"></i> 動作要領：
+                                    </p>
+                                    <p class="leading-relaxed text-[11px] text-muji-text/80">${item.desc}</p>
+                                </div>
+                                <div class="pt-1 border-t border-muji-border/40">
+                                    <p class="font-semibold text-muji-text mb-0.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-triangle-exclamation text-rose-400 text-[10px]"></i> 注意事項：
+                                    </p>
+                                    <p class="leading-relaxed text-[11px] text-muji-text/80">${item.caution}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
                 `;
             });
 
             container.innerHTML = html;
         }
 
-        /* Filter Controller Functions */
-        function setMuscleFilter(muscle) {
-            state.filterMuscle = muscle;
-            const btns = document.querySelectorAll('.filter-muscle-btn');
-            btns.forEach(btn => {
-                if ((muscle === 'all' && btn.textContent === '全部') || btn.textContent === muscle) {
-                    btn.className = "filter-muscle-btn active px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all";
-                } else {
-                    btn.className = "filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border hover:border-muji-accent transition-all";
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
                 }
-            });
-            renderLibraryList();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
-        function setEquipmentFilter(equip) {
-            state.filterEquipment = equip;
-            const btns = document.querySelectorAll('.filter-equip-btn');
-            btns.forEach(btn => {
-                const text = btn.textContent;
-                if ((equip === 'all' && text.includes('全部')) || 
-                    (equip === '徒手' && text.includes('徒手')) || 
-                    (equip === '啞鈴' && text.includes('啞鈴'))) {
-                    btn.className = "filter-equip-btn flex-1 py-1.5 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all";
+        function playTimerSound() {
+            if (isMuted) return;
+            initAudioContext();
+            if (!audioCtx) return;
+
+            try {
+                // Synthesize a serene Japanese Rin/Chime sound (日系清脆磬音) using Web Audio API
+                const now = audioCtx.currentTime;
+                
+                // Clear high harmonic frequencies for traditional Japanese bell / singing bowl resonance
+                const freqs = [1567.98, 3135.96, 4703.94]; // G6 fundamental + high overtones
+                const volumes = [0.22, 0.08, 0.03];
+                const decayTimes = [2.5, 1.8, 1.2];
+
+                freqs.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+                    // Micro-pitch drift for organic metallic ring decay
+                    osc.frequency.exponentialRampToValueAtTime(freq * 0.998, now + decayTimes[i]);
+
+                    // Fast crisp strike attack, followed by long tranquil decay
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(volumes[i], now + 0.008);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + decayTimes[i]);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + decayTimes[i]);
+                });
+            } catch (e) {
+                console.error("Audio playback error", e);
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            saveStateToStorage();
+            updateMuteUI();
+            showToast(isMuted ? "已切換為靜音模式" : "已開啟提示音效");
+        }
+
+        function updateMuteUI() {
+            const icon = document.getElementById('mute-icon');
+            if (icon) {
+                if (isMuted) {
+                    icon.className = "fa-solid fa-volume-xmark text-muji-muted";
                 } else {
-                    btn.className = "filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all";
+                    icon.className = "fa-solid fa-volume-high text-muji-matcha";
                 }
-            });
-            renderLibraryList();
-        }
-
-        /* Checklist Interactions */
-        function addToToday(id) {
-            if (!state.todayList.includes(id)) {
-                state.todayList.push(id);
-                saveStateToStorage();
-                renderApp();
-                showToast("已加入今日清單");
             }
         }
 
-        function removeFromToday(id) {
-            state.todayList = state.todayList.filter(item => item !== id);
-            delete state.completedItems[id];
-            saveStateToStorage();
-            renderApp();
-            showToast("已從清單移除");
-        }
-
-        function toggleComplete(id) {
-            state.completedItems[id] = !state.completedItems[id];
-            saveStateToStorage();
-            renderApp();
-            
-            // Haptic Feedback for iPhone Safari if available
-            if (window.navigator && window.navigator.vibrate) {
-                window.navigator.vibrate(40);
-            }
-        }
-
-        function confirmResetAll() {
-            if (confirm("確定要重置今日的鍛鍊記錄與選擇嗎？")) {
-                state.todayList = [];
-                state.completedItems = {};
-                saveStateToStorage();
-                renderApp();
-                showToast("今日記錄已重置");
-            }
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            const message = document.getElementById('toast-message').querySelector('span');
-            message.textContent = msg;
-            
-            toast.classList.remove('opacity-0', '-translate-y-4');
-            toast.classList.add('opacity-100', 'translate-y-0');
-
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-y-0');
-                toast.classList.add('opacity-0', '-translate-y-4');
-            }, 1800);
-        }
-
-        /* Rest Timer Engine */
         function startTimer(seconds) {
+            initAudioContext();
             clearInterval(timer.interval);
             timer.totalSeconds = seconds;
             timer.remainingSeconds = seconds;
             timer.isRunning = true;
 
-            updateTimerUI();
-            showActiveTimerControls(true);
+            document.getElementById('timer-presets').classList.add('hidden');
+            document.getElementById('timer-controls').classList.remove('hidden');
+
+            updateTimerDisplay();
 
             timer.interval = setInterval(() => {
                 if (timer.remainingSeconds > 0) {
                     timer.remainingSeconds--;
-                    updateTimerUI();
+                    updateTimerDisplay();
                 } else {
-                    finishTimer();
+                    clearInterval(timer.interval);
+                    timer.isRunning = false;
+                    playTimerSound();
+                    showToast("⏰ 休息時間結束！開始下一組鍛鍊");
+                    resetTimer();
                 }
             }, 1000);
         }
 
         function toggleTimer() {
-            if (!timer.isRunning && timer.remainingSeconds > 0) {
-                // Resume
+            const toggleBtn = document.getElementById('timer-toggle-btn');
+            if (timer.isRunning) {
+                clearInterval(timer.interval);
+                timer.isRunning = false;
+                if (toggleBtn) toggleBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
+            } else if (timer.remainingSeconds > 0) {
                 timer.isRunning = true;
+                if (toggleBtn) toggleBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
                 timer.interval = setInterval(() => {
                     if (timer.remainingSeconds > 0) {
                         timer.remainingSeconds--;
-                        updateTimerUI();
+                        updateTimerDisplay();
                     } else {
-                        finishTimer();
+                        clearInterval(timer.interval);
+                        timer.isRunning = false;
+                        playTimerSound();
+                        showToast("⏰ 休息時間結束！開始下一組鍛鍊");
+                        resetTimer();
                     }
                 }, 1000);
-            } else {
-                // Pause
-                timer.isRunning = false;
-                clearInterval(timer.interval);
             }
-            updateTimerToggleIcon();
         }
 
-        function addTimerTime(seconds) {
-            timer.remainingSeconds += seconds;
-            timer.totalSeconds += seconds;
-            updateTimerUI();
+        function addTimerTime(secs) {
+            timer.remainingSeconds += secs;
+            updateTimerDisplay();
         }
 
         function resetTimer() {
             clearInterval(timer.interval);
             timer.isRunning = false;
             timer.remainingSeconds = 0;
-            updateTimerUI();
-            showActiveTimerControls(false);
+            updateTimerDisplay();
+
+            const toggleBtn = document.getElementById('timer-toggle-btn');
+            if (toggleBtn) toggleBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+
+            document.getElementById('timer-presets').classList.remove('hidden');
+            document.getElementById('timer-controls').classList.add('hidden');
         }
 
-        function finishTimer() {
-            resetTimer();
-            playChimeSound();
-
-            if (window.navigator && window.navigator.vibrate) {
-                window.navigator.vibrate([200, 100, 200, 100, 300]);
-            }
-
-            showToast("休息時間結束！開始下一組吧");
-        }
-
-        function updateTimerUI() {
+        function updateTimerDisplay() {
             const mins = Math.floor(timer.remainingSeconds / 60);
             const secs = timer.remainingSeconds % 60;
-            const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            
-            document.getElementById('timer-display').textContent = formatted;
-            
-            const timerIcon = document.getElementById('timer-icon-bg');
-            if (timer.isRunning) {
-                timerIcon.className = "w-9 h-9 rounded-xl bg-muji-matcha text-white flex items-center justify-center animate-pulse";
-            } else {
-                timerIcon.className = "w-9 h-9 rounded-xl bg-muji-sand text-muji-text flex items-center justify-center";
-            }
-
-            updateTimerToggleIcon();
+            const str = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const el = document.getElementById('timer-display');
+            if (el) el.textContent = str;
         }
 
-        function updateTimerToggleIcon() {
-            const btn = document.getElementById('timer-toggle-btn');
-            if (timer.isRunning) {
-                btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            } else {
-                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            if (toast && toastText) {
+                toastText.textContent = message;
+                toast.classList.remove('opacity-0', '-translate-y-4');
+                toast.classList.add('opacity-100', 'translate-y-0');
+
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', '-translate-y-4');
+                }, 2200);
             }
         }
 
-        function showActiveTimerControls(active) {
-            const presets = document.getElementById('timer-presets');
-            const controls = document.getElementById('timer-controls');
+        function confirmResetAll() {
+            openResetModal();
+        }
 
-            if (active) {
-                presets.classList.add('hidden');
-                controls.classList.remove('hidden');
-            } else {
-                presets.classList.remove('hidden');
-                controls.classList.add('hidden');
+        function openResetModal() {
+            const modal = document.getElementById('reset-modal');
+            const card = document.getElementById('reset-modal-card');
+            if (modal && card) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
             }
         }
 
-        /* Web Audio API - Elegant Japanese Bell/Chime Sound without external URL dependencies */
-        function playChimeSound() {
+        function closeResetModal() {
+            const modal = document.getElementById('reset-modal');
+            const card = document.getElementById('reset-modal-card');
+            if (modal && card) {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+        }
+
+        function executeResetAll() {
+            closeResetModal();
+            // Clear runtime state (清空今日清單、勾選狀態與自訂組數)
+            state.todayList = [];
+            state.completedItems = {};
+            state.customSetsReps = {};
+
+            // Clear local storage entries
             try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) return;
-                
-                const ctx = new AudioContext();
-                
-                // First soft bell note
-                playTone(ctx, 523.25, 0, 0.6);  // C5
-                playTone(ctx, 659.25, 0.15, 0.8); // E5
-                playTone(ctx, 783.99, 0.3, 1.2);  // G5
+                localStorage.removeItem('muji_workout_today');
+                localStorage.removeItem('muji_workout_completed');
+                localStorage.removeItem('muji_workout_custom');
             } catch (e) {
-                console.log("Web Audio API not supported or blocked", e);
+                console.error("Failed to reset local storage", e);
             }
-        }
 
-        function playTone(ctx, freq, startTime, duration) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
-
-            gain.gain.setValueAtTime(0.3, ctx.currentTime + startTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-
-            osc.start(ctx.currentTime + startTime);
-            osc.stop(ctx.currentTime + startTime + duration);
+            // Re-render UI and present feedback
+            renderApp();
+            showToast("已重置所有清單與訓練記錄");
         }
     </script>
 </body>
