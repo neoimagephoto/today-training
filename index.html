@@ -9,8 +9,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="今日之鍛鍊">
-    <link rel="apple-touch-icon-precomposed" href="icon-002.png">
-
+    <link rel="apple-touch-icon-precomposed" href="icon-006.png">
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -135,71 +135,74 @@
     <!-- Main Container restricted to Mobile Viewport Width -->
     <div class="max-w-md mx-auto min-h-screen relative flex flex-col bg-muji-bg shadow-sm">
 
-        <!-- Header Zone -->
-        <header class="sticky top-0 z-30 glass-header border-b border-muji-border/60 px-5 pt-4 pb-3">
-            <div class="flex justify-between items-center">
-                <div>
-                    <p id="current-date" class="text-xs font-medium text-muji-muted tracking-wider uppercase">2026年8月9日 星期日</p>
-                    <h1 class="text-xl font-semibold tracking-wide text-muji-text mt-0.5">今日之鍛鍊</h1>
+        <!-- Fixed Sticky Top Controls Section -->
+        <div class="sticky top-0 z-30 glass-header border-b border-muji-border/60 shadow-xs">
+            <!-- Header Zone -->
+            <header class="px-5 pt-4 pb-2">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p id="current-date" class="text-xs font-medium text-muji-muted tracking-wider uppercase">2026年8月9日 星期日</p>
+                        <h1 class="text-xl font-semibold tracking-wide text-muji-text mt-0.5">今日之鍛鍊</h1>
+                    </div>
+                    <button onclick="confirmResetAll()" class="text-xs text-muji-muted hover:text-red-500 transition-colors flex items-center gap-1 bg-muji-sand/70 px-2.5 py-1.5 rounded-lg active:scale-95">
+                        <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                        <span>重置記錄</span>
+                    </button>
                 </div>
-                <button onclick="confirmResetAll()" class="text-xs text-muji-muted hover:text-red-500 transition-colors flex items-center gap-1 bg-muji-sand/70 px-2.5 py-1.5 rounded-lg active:scale-95">
-                    <i class="fa-solid fa-rotate-left text-[10px]"></i>
-                    <span>重置記錄</span>
-                </button>
-            </div>
-        </header>
+            </header>
 
-        <!-- Progress Summary Section -->
-        <section class="px-5 pt-4 pb-1">
-            <div class="bg-white border border-muji-border rounded-2xl p-4 shadow-xs">
-                <div class="flex justify-between items-baseline mb-2">
-                    <span class="text-xs font-medium text-muji-muted">今日完成進度</span>
-                    <span class="text-sm font-semibold text-muji-matcha" id="progress-text">0 / 0 (0%)</span>
+            <!-- Progress Summary Section -->
+            <section class="px-5 pt-1 pb-1">
+                <div class="bg-white/90 border border-muji-border rounded-2xl p-3 shadow-xs">
+                    <div class="flex justify-between items-baseline mb-1.5">
+                        <span class="text-xs font-medium text-muji-muted">今日完成進度</span>
+                        <span class="text-sm font-semibold text-muji-matcha" id="progress-text">0 / 0 (0%)</span>
+                    </div>
+                    <div class="w-full bg-muji-sand h-2.5 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                    </div>
                 </div>
-                <div class="w-full bg-muji-sand h-2.5 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="bg-muji-matcha h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Navigation Tabs -->
-        <div class="px-5 my-3">
-            <div class="grid grid-cols-2 bg-muji-sand p-1 rounded-xl text-center text-xs font-medium">
-                <button id="tab-today" onclick="switchTab('today')" class="py-2.5 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>今日訓練</span>
-                    <span id="badge-count" class="bg-muji-matcha text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px]">0</span>
-                </button>
-                <button id="tab-library" onclick="switchTab('library')" class="py-2.5 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-dumbbell"></i>
-                    <span>動作檢索</span>
-                </button>
+            <!-- Navigation Tabs -->
+            <div class="px-5 my-2">
+                <div class="grid grid-cols-2 bg-muji-sand/80 p-1 rounded-xl text-center text-xs font-medium">
+                    <button id="tab-today" onclick="switchTab('today')" class="py-2 rounded-lg transition-all duration-200 bg-white shadow-xs text-muji-text font-semibold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>今日訓練</span>
+                        <span id="badge-count" class="bg-muji-matcha text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px]">0</span>
+                    </button>
+                    <button id="tab-library" onclick="switchTab('library')" class="py-2 rounded-lg transition-all duration-200 text-muji-muted hover:text-muji-text flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-dumbbell"></i>
+                        <span>動作檢索</span>
+                    </button>
+                </div>
             </div>
+
+            <!-- Filter Controls -->
+            <section id="filter-section" class="px-5 mb-2.5 hidden">
+                <!-- Muscle Group Filter Pills -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
+                    <button onclick="setMuscleFilter('all')" class="filter-muscle-btn active px-3 py-1 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all">全部</button>
+                    <button onclick="setMuscleFilter('胸部')" class="filter-muscle-btn px-3 py-1 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">胸部</button>
+                    <button onclick="setMuscleFilter('背部')" class="filter-muscle-btn px-3 py-1 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">背部</button>
+                    <button onclick="setMuscleFilter('肩膀')" class="filter-muscle-btn px-3 py-1 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">肩膀</button>
+                    <button onclick="setMuscleFilter('手臂')" class="filter-muscle-btn px-3 py-1 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">手臂</button>
+                    <button onclick="setMuscleFilter('核心')" class="filter-muscle-btn px-3 py-1 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">核心</button>
+                    <button onclick="setMuscleFilter('腿部')" class="filter-muscle-btn px-3 py-1 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">腿部</button>
+                </div>
+
+                <!-- Equipment Filter Buttons -->
+                <div class="flex items-center justify-between bg-white/90 border border-muji-border/80 rounded-xl p-1 mt-1 text-xs">
+                    <button onclick="setEquipmentFilter('all')" class="filter-equip-btn flex-1 py-1 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all">全部器材</button>
+                    <button onclick="setEquipmentFilter('徒手')" class="filter-equip-btn flex-1 py-1 text-center rounded-lg text-muji-muted transition-all">徒手訓練</button>
+                    <button onclick="setEquipmentFilter('啞鈴')" class="filter-equip-btn flex-1 py-1 text-center rounded-lg text-muji-muted transition-all">啞鈴訓練</button>
+                </div>
+            </section>
         </div>
 
-        <!-- Filter Controls -->
-        <section id="filter-section" class="px-5 mb-3 hidden">
-            <!-- Muscle Group Filter Pills -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
-                <button onclick="setMuscleFilter('all')" class="filter-muscle-btn active px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-muji-text text-white transition-all">全部</button>
-                <button onclick="setMuscleFilter('胸部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">胸部</button>
-                <button onclick="setMuscleFilter('背部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">背部</button>
-                <button onclick="setMuscleFilter('肩膀')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">肩膀</button>
-                <button onclick="setMuscleFilter('手臂')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">手臂</button>
-                <button onclick="setMuscleFilter('核心')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">核心</button>
-                <button onclick="setMuscleFilter('腿部')" class="filter-muscle-btn px-3 py-1.5 rounded-full text-xs whitespace-nowrap bg-white text-muji-muted border border-muji-border transition-all">腿部</button>
-            </div>
-
-            <!-- Equipment Filter Buttons -->
-            <div class="flex items-center justify-between bg-white border border-muji-border/80 rounded-xl p-1 mt-1 text-xs">
-                <button onclick="setEquipmentFilter('all')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg bg-muji-sand text-muji-text font-medium transition-all">全部器材</button>
-                <button onclick="setEquipmentFilter('徒手')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all">徒手訓練</button>
-                <button onclick="setEquipmentFilter('啞鈴')" class="filter-equip-btn flex-1 py-1.5 text-center rounded-lg text-muji-muted transition-all">啞鈴訓練</button>
-            </div>
-        </section>
-
         <!-- Main Content Area -->
-        <main class="flex-1 px-5 safe-pb">
+        <main class="flex-1 px-5 pt-3 safe-pb">
             <!-- VIEW 1: TODAY'S WORKOUT CHECKLIST -->
             <div id="view-today" class="space-y-3">
                 <div id="today-empty-state" class="hidden text-center py-12 px-4">
